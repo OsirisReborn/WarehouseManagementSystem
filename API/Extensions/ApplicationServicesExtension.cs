@@ -16,7 +16,13 @@ namespace API.Extensions
             
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen(); 
+            services.AddSwaggerGen(c =>
+            {
+                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+                c.IgnoreObsoleteActions();
+                c.IgnoreObsoleteProperties();
+                c.CustomSchemaIds(type => type.FullName);
+            }); 
             services.AddDbContext<StoreContext>(
                 options => options.UseSqlite(config.GetConnectionString("DefaultConnection"))
             );
@@ -42,6 +48,15 @@ namespace API.Extensions
                     return new BadRequestObjectResult(errorResponse);
                 };
             });
+
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy("CorsPolicy", policy =>
+                {
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200");
+                });
+            });
+
             return services;
         }
     }
